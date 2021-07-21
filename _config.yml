@@ -31,6 +31,7 @@ github_username:  jekyll
 
 # Build settings
 theme: jekyll-theme-scrawl
+remote_theme: lightster/jekyll-theme-scrawl
 plugins:
   - jekyll-feed
 
