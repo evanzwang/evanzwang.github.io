@@ -13,6 +13,7 @@ permalink: pretty
 remote_theme: lightster/jekyll-theme-scrawl
 plugins:
   - jekyll-feed
+  - jekyll-seo-tag
 
 # Exclude from processing.
 # The following items will not be processed, by default.
