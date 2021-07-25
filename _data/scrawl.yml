@@ -1,0 +1,7 @@
+categories:
+  - title: Projects
+    order: 1
+    key: projects
+  - title: Music
+    order: 2
+    key: music
