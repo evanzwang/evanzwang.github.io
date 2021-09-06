@@ -1,0 +1,266 @@
+class BoardManager{
+    static DELTA_LIST = [[-1, 0], [-1, 1], [0, 1], [1, 1]];
+    constructor(height, width, connectNum, isDirect, numPlayers) {
+        this.height = height;
+        this.width = width;
+        this.connectNum = connectNum;
+        this.isDirect = isDirect;
+        this.numPlayers = numPlayers;
+    }
+
+    blankBoard(){
+        let board = [];
+        for(let i = 0; i < this.height; i++){
+            let row = [];
+            for(let j = 0; j < this.width; j++){
+                row.push(0);
+            }
+            board.push(row);
+        }
+        return board;
+    }
+
+    nextPlayer(currPlayer){
+        return currPlayer % this.numPlayers + 1
+    }
+
+    takeAction(board, action, player){
+        let newBoard = [];
+        for(let i = 0; i < this.height; i++){
+            newBoard.push([...board[i]])
+        }
+        if(this.isDirect){
+            let r = Math.floor(action/this.width);
+            let c = action % this.width;
+            if(newBoard[r][c] == 0){
+                newBoard[r][c] = player;
+                return [newBoard, this.isConnected(newBoard, r, c)];
+            }else{
+                return [board, -1];
+            }
+        }else{
+            throw{name : "Not Implemented"};
+        }
+    }
+
+    isConnected(board, r, c){
+        let player = board[r][c];
+        for (const delta of BoardManager.DELTA_LIST) {
+            let deltaR = delta[0];
+            let deltaC = delta[1];
+            let newR = r + deltaR;
+            let newC = c + deltaC;
+            let currStreak = 1;
+            let reverseState = 0;
+            while (1) {
+                if(newR < 0 || newR >= this.height || newC < 0 || newC >= this.width){
+                    reverseState++;
+                }else if(board[newR][newC] == player){
+                    currStreak++;
+                }else{
+                    reverseState++;
+                }
+                if(reverseState % 2){
+                    if(reverseState == 1){
+                        reverseState++;
+                        deltaR = -deltaR;
+                        deltaC = -deltaC;
+                        newR = r;
+                        newC = c;
+                    }else{
+                        break;
+                    }
+                }
+                if(currStreak >= this.connectNum){
+                    return player;
+                }
+                newR += deltaR;
+                newC += deltaC;
+            }
+        }
+        if(this.numValidMoves(board) == 0){
+            return -2;
+        }
+        return 0;
+    }
+
+    numValidMoves(board){
+        let ans = 0;
+        for (const row of board) {
+            for (const el of row) {
+                if(el == 0){
+                    ans++;
+                }
+            }
+        }
+        return ans;
+    }
+
+    standardPerspective(board, player){
+        let perspBoard = [];
+        for(let i = 0; i < this.height; i++){
+            let row = [];
+            for(let j = 0; j < this.width; j++){
+                if(board[i][j] == 0){
+                    row.push(0);
+                }else{
+                    row.push((board[i][j]-player+this.numPlayers) % this.numPlayers + 1);
+                }
+            }
+            perspBoard.push(row);
+        }
+        return perspBoard;
+    }
+
+    oneHotPerspective(board, player){
+        let fArray = new Float32Array((this.numPlayers + 1) * this.height * this.width);
+        for(let i = 0; i < this.height; i++){
+            for(let j = 0; j < this.width; j++){
+                if(board[i][j] == 0){
+                    fArray[i * this.width + j] = 1;
+                }else{
+                    let channel = (board[i][j]-player+this.numPlayers) % this.numPlayers + 1;
+                    fArray[channel * this.height * this.width + i * this.width + j] = 1;
+                }
+            }
+        }
+        return new Tensor(fArray, "float32", [1, this.numPlayers + 1, this.height, this.width]);
+    }
+}
+
+class NNPlayer{
+    constructor(bm, nnModelPath, mcstSteps,){
+        this.bm = bm;
+        this.steps = mcstSteps;
+        this.session = new InferenceSession();
+        // this.session = iSession;
+        this.setUpSession(nnModelPath);
+        this.tree = new MCST(this.session, this.bm);
+    }
+
+    async setUpSession(nnModelPath){
+        await this.session.loadModel(nnModelPath);
+    }
+
+    reset(){
+        this.tree.reset();
+    }
+
+    doSearch(state, player){
+    
+    }
+
+    async doSearches(state, player){
+        for(let i = 0; i < this.steps; i++){
+            setTimeout(this.tree.search(state, player), 0);
+            // await this.tree.search(state, player);
+        }
+    }
+
+    async chooseAction(state, player){
+        return this.doSearches(state, player).then(() => {
+            let maxAction = this.tree.getMaxAction(state, player);
+            // console.log(maxAction, "maxact");
+            return maxAction;
+        });
+    }
+}
+
+class MCST{
+    static SMALL_VAL = -1000;
+    constructor(iSession, bm){
+        this.session = iSession;
+        this.bm = bm;
+
+        this.QSA = {};
+        this.NSA = {};
+        this.PSA = {};
+        this.NS = {};
+    }
+    reset(){
+        this.QSA = {};
+        this.NSA = {};
+        this.PSA = {};
+        this.NS = {};
+    }
+    getMaxAction(state, player){
+        let encodedState = this.bm.standardPerspective(state, player).join();
+        // console.log("heh2", encodedState);
+        // console.log("bbee", this.NSA);
+
+        let visNum = this.NSA[encodedState];
+        let possActions = [];
+        let maxVis = -1;
+        for(let i = 0; i < visNum.length; i++){
+            if(maxVis < visNum[i]){
+                possActions = [];
+                maxVis = visNum[i];
+            }
+            if(maxVis == visNum[i]){
+                possActions.push(i);
+            }
+        }
+        return possActions[Math.floor(Math.random() * possActions.length)];
+    }
+    async search(state, player){
+        let encodedState = this.bm.standardPerspective(state, player).join();
+        // console.log("heh", encodedState);
+        if(!(encodedState in this.QSA)){
+            let input = [this.bm.oneHotPerspective(state, player)];
+            let outputVals = await this.session.run(input);
+            // console.log(outputVals);
+            let deee = outputVals.values();
+            let probs = deee.next().value.data;
+            let val = deee.next().value.data[0];
+
+            this.PSA[encodedState] = probs;
+            this.QSA[encodedState] = new Float32Array(probs.length);
+            this.NSA[encodedState] = new Int32Array(probs.length);
+            // console.log(this.NSA[encodedState].length);
+            // console.log("lolmoment")
+            this.NS[encodedState] = 0;
+            return [val, player];
+        }
+        
+        let probs = this.PSA[encodedState];
+        let qVals = this.QSA[encodedState];
+        let visNum = this.NSA[encodedState];
+        let sumVisNum = this.NS[encodedState];
+
+        let takenAction = -1;
+        let maxPUCT = MCST.SMALL_VAL;
+        for(let i = 0; i < probs.length; i++){
+            let currPUCT = qVals[i] + probs[i] * Math.sqrt(sumVisNum) / (1 + visNum[i]);
+            if(maxPUCT < currPUCT){
+                maxPUCT = currPUCT;
+                takenAction = i;
+            }
+        }
+        // MAYBE WANT TO FILTER VALID MOVES
+        let [newState, winStatus] = this.bm.takeAction(state, takenAction, player);
+        if(winStatus){
+            if(winStatus > 0){
+                return [1, winStatus];
+            }
+            return [0, 0];
+        }
+
+        let newPlayer = this.bm.nextPlayer(player);
+        let [nextStateVal, valPlayer] = await this.search(newState, newPlayer);
+
+        let relVal = (-1) ** (valPlayer != player) * nextStateVal;
+        this.NS[encodedState]++;
+        qVals[takenAction] = (qVals[takenAction] * visNum[takenAction] + relVal) / (visNum[takenAction] + 1);
+        visNum[takenAction]++;
+        return [nextStateVal, valPlayer];
+    }
+}
+
+// const _NNPlayer = NNPlayer;
+// exports.NNPlayer = _NNPlayer;
+// export { _NNPlayer as NNPlayer };
+// const _MCST = MCST;
+// exports.MCST = _MCST;
+// export { _MCST as MCST };
+
+export {BoardManager, NNPlayer, MCST};
