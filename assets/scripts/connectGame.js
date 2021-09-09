@@ -1,4 +1,3 @@
-// import { Tensor } from "onnxjs";
 import { NNPlayer, BoardManager } from "./modelArch.js";
 
 class Game{
@@ -95,16 +94,10 @@ class Game{
         this.setMessage(msg);
 
         if(currPlayerObj !== "H"){
-            // let d = this.players[this.currPlayer-1].chooseAction(this.board, this.currPlayer);
-            // console.log(d);
             currPlayerObj.chooseAction(this.board, this.currPlayer).then((action) => {
                 console.log(action, "ACtion?");
                 this.makeMove(action);
             })
-            // let d = await currPlayerObj.chooseAction(this.board, this.currPlayer);
-            // console.log(d);
-            // this.makeMove(d);
-            // this.makeMove(currPlayerObj.chooseAction(this.board, this.currPlayer));
         }
         // if(currPlayerObj instanceof Worker){
         //     const inDict = {"type": "ACTION", "state": this.board, "player": this.currPlayer};
@@ -120,7 +113,6 @@ class Game{
             document.getElementById(action).prepend(piece);
         }else{
             document.getElementById(action).appendChild(piece);
-            console.log("what")
         }
     }
 
@@ -132,7 +124,6 @@ class Game{
         }
         this.board = newBoard;
         this.renderPiece(action);
-        console.log("hehe render");
         if(winStatus != 0){
             if(winStatus > 0){
                 this.setMessage(`Player ${winStatus} has won!`);
@@ -229,63 +220,13 @@ class Game{
     boundOutSquare = this.outHoverSquare.bind(this);
 }
 
-function renderBoard(){
-    let bm = new BoardManager(10, 10, 5, true, 2);
-    let boardDiv = document.getElementById("board");
-    // boardDiv.appendChild(document.createTextNode("bruh"))
-    for(let i = 0; i < 10; i++){
-        let de = document.createElement("div");
-        de.classList.add("row");
-        for(let j = 0; j < 10; j++){
-            let b = document.createElement("div");
-            b.classList.add("square");
-            b.setAttribute("id", i * bm.width + j);
-            // b.addEventListener("click", clickSquare);
-            let c = document.createElement("div");
-            c.classList.add("piece")
-            // c.textContent = "ee"
-            b.appendChild(c);
-            de.appendChild(b);
-        }
-        boardDiv.appendChild(de);
-    }
-}
-
 async function runGame(){
     let g = new Game(10, 10, 5, true, 2);
     let bm = new BoardManager(10, 10, 5, true, 2);
     let nn = new NNPlayer(bm, "../assets/misc/nfive_6000.onnx", 36);
 
-    let nnWorker = new Worker("../assets/scripts/nnWorker.js", {type: "module"});
-    // let inDict = {"type": "INIT", "model": nn};
-    // let session = new InferenceSession();
-    // await session.loadModel("../assets/misc/nfive_6000.onnx");
-
-    // let inDict = {
-    //     "type": "INIT", 
-    //     "width": bm, "height": 10, "connectNum": 5, "isDirect": true, "numPlayers": 2,
-    //     "nnModelPath": "../assets/misc/nfive_6000.onnx", "mcstSteps": 3
-    // };
-
-    // nn.chooseAction;
-    // nnWorker.postMessage(inDict);
-    // nnWorker.onmessage = g.parseMessage;
-
-    
-    console.log("hi");
-    // lol moment
     g.players = ["H", nn];
     g.renderBoard();
 }
-
-let bm = new BoardManager(10, 10, 5, true, 2);
-let b = bm.blankBoard();
-let [c, _] = bm.takeAction(b, 3, 1);
-let [d, __] = bm.takeAction(b, 5, 2);
-
-// console.log(c);
-// console.log(d);
-
-// export {BoardManager};
 
 window.onload = runGame()

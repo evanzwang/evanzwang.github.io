@@ -133,7 +133,6 @@ class NNPlayer{
         this.bm = bm;
         this.steps = mcstSteps;
         this.session = new InferenceSession();
-        // this.session = iSession;
         this.setUpSession(nnModelPath);
         this.tree = new MCST(this.session, this.bm);
     }
@@ -146,13 +145,8 @@ class NNPlayer{
         this.tree.reset();
     }
 
-    doSearch(state, player){
-    
-    }
-
     async doSearches(state, player){
         for(let i = 0; i < this.steps; i++){
-            // setTimeout(this.tree.search(state, player), 0);
             await this.tree.search(state, player);
         }
     }
@@ -160,7 +154,6 @@ class NNPlayer{
     async chooseAction(state, player){
         return this.doSearches(state, player).then(() => {
             let maxAction = this.tree.getMaxAction(state, player);
-            // console.log(maxAction, "maxact");
             return maxAction;
         });
     }
@@ -185,12 +178,10 @@ class MCST{
     }
     getMaxAction(state, player){
         let encodedState = this.bm.standardPerspective(state, player).join();
-        // console.log("heh2", encodedState);
-        // console.log("bbee", this.NSA);
-
         let visNum = this.NSA[encodedState];
         let possActions = [];
         let maxVis = -1;
+
         for(let i = 0; i < visNum.length; i++){
             if(maxVis < visNum[i]){
                 possActions = [];
@@ -204,11 +195,9 @@ class MCST{
     }
     async search(state, player){
         let encodedState = this.bm.standardPerspective(state, player).join();
-        // console.log("heh", encodedState);
         if(!(encodedState in this.QSA)){
             let input = [this.bm.oneHotPerspective(state, player)];
             let outputVals = await this.session.run(input);
-            // console.log(outputVals);
             let deee = outputVals.values();
             let probs = deee.next().value.data;
             let val = deee.next().value.data[0];
@@ -216,8 +205,6 @@ class MCST{
             this.PSA[encodedState] = probs;
             this.QSA[encodedState] = new Float32Array(probs.length);
             this.NSA[encodedState] = new Int32Array(probs.length);
-            // console.log(this.NSA[encodedState].length);
-            // console.log("lolmoment")
             this.NS[encodedState] = 0;
             return [val, player];
         }
@@ -236,6 +223,7 @@ class MCST{
                 takenAction = i;
             }
         }
+
         // MAYBE WANT TO FILTER VALID MOVES
         let [newState, winStatus] = this.bm.takeAction(state, takenAction, player);
         if(winStatus){
@@ -255,12 +243,5 @@ class MCST{
         return [nextStateVal, valPlayer];
     }
 }
-
-// const _NNPlayer = NNPlayer;
-// exports.NNPlayer = _NNPlayer;
-// export { _NNPlayer as NNPlayer };
-// const _MCST = MCST;
-// exports.MCST = _MCST;
-// export { _MCST as MCST };
 
 export {BoardManager, NNPlayer, MCST};
