@@ -8,7 +8,7 @@ class Game{
         this.board = this.bm.blankBoard();
         this.winner = 0;
     }
-    
+
     renderBoard(){
         let squareWidth = 100 / this.bm.width;
         let boardDiv = document.getElementById("board");
@@ -96,7 +96,6 @@ class Game{
 
         if(currPlayerObj !== "H"){
             currPlayerObj.chooseAction(this.board, this.currPlayer).then((action) => {
-                console.log(action, "ACtion?");
                 this.makeMove(action);
             })
         }
@@ -143,7 +142,6 @@ class Game{
             }
             return;
         }
-        console.log("clicked");
         if(this.bm.isDirect){
             let action;
             if(event.target.classList.contains("piece")){
