@@ -8,6 +8,7 @@ class Game{
         this.board = this.bm.blankBoard();
         this.winner = 0;
     }
+    
     renderBoard(){
         let squareWidth = 100 / this.bm.width;
         let boardDiv = document.getElementById("board");
@@ -62,7 +63,7 @@ class Game{
     }
 
     reset(){
-        // reset models
+        // Reset models
         let boardDiv = document.getElementById("board");
         for(let i = 0; i < this.bm.height; i++){
             for(let j = 0; j < this.bm.width; j++){
@@ -99,10 +100,6 @@ class Game{
                 this.makeMove(action);
             })
         }
-        // if(currPlayerObj instanceof Worker){
-        //     const inDict = {"type": "ACTION", "state": this.board, "player": this.currPlayer};
-        //     currPlayerObj.postMessage(inDict);
-        // }
     }
     
     renderPiece(action, temp = false){
@@ -134,16 +131,6 @@ class Game{
         }else{
             this.currPlayer = this.bm.nextPlayer(this.currPlayer);
             this.updatePlayer();
-        }
-    }
-
-    parseMessage(msg){
-        const msgDict = msg.data;
-        if(msgDict["type"] === "INIT"){
-            return;
-        }
-        if(msgDict["type"] === "ACTION"){
-            this.makeMove(msgDict["action"]);
         }
     }
 
