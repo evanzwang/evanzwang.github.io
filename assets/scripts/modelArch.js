@@ -152,8 +152,8 @@ class NNPlayer{
 
     async doSearches(state, player){
         for(let i = 0; i < this.steps; i++){
-            setTimeout(this.tree.search(state, player), 0);
-            // await this.tree.search(state, player);
+            // setTimeout(this.tree.search(state, player), 0);
+            await this.tree.search(state, player);
         }
     }
 
