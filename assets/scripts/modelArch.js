@@ -212,9 +212,9 @@ class MCST{
         if(!(encodedState in this.QSA)){
             let input = [this.bm.oneHotPerspective(state, player)];
             let outputVals = await this.session.run(input);
-            let deee = outputVals.values();
-            let probs = deee.next().value.data;
-            let val = deee.next().value.data[0];
+            let outputValsValues = outputVals.values();
+            let probs = outputValsValues.next().value.data;
+            let val = outputValsValues.next().value.data[0];
 
             this.PSA[encodedState] = probs;
             this.QSA[encodedState] = new Float32Array(probs.length);
