@@ -208,7 +208,7 @@ class Game{
 async function runGame(){
     let g = new Game(10, 10, 5, true, 2);
     let bm = new BoardManager(10, 10, 5, true, 2);
-    let nn = new NNPlayer(bm, "../assets/misc/nfive_6000.onnx", 36);
+    let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 36);
 
     g.players = ["H", nn];
     g.renderBoard();
