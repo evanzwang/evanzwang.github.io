@@ -96,6 +96,20 @@ class BoardManager{
         return ans;
     }
 
+    getValidMoves(board){
+        let validMoves = [];
+        if(this.isDirect){
+            for (const row of board) {
+                for (const el of row) {
+                    validMoves.push(el == 0);
+                }
+            }
+        }else{
+            throw{name: "Not Implemented"};
+        }
+        return validMoves;
+    }
+
     standardPerspective(board, player){
         let perspBoard = [];
         for(let i = 0; i < this.height; i++){
@@ -216,15 +230,16 @@ class MCST{
 
         let takenAction = -1;
         let maxPUCT = MCST.SMALL_VAL;
+        let validMask = this.bm.getValidMoves(state);
         for(let i = 0; i < probs.length; i++){
             let currPUCT = qVals[i] + probs[i] * Math.sqrt(sumVisNum) / (1 + visNum[i]);
+            currPUCT += MCST.SMALL_VAL * !validMask[i];
             if(maxPUCT < currPUCT){
                 maxPUCT = currPUCT;
                 takenAction = i;
             }
         }
 
-        // MAYBE WANT TO FILTER VALID MOVES
         let [newState, winStatus] = this.bm.takeAction(state, takenAction, player);
         if(winStatus){
             if(winStatus > 0){
