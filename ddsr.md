@@ -5,6 +5,7 @@ width:
 category: projects
 reading_time: False
 summary: We trained a model predict a depth value for every pixel of a given image. This page is an adapted README from the GitHub repo, which you can find [here](https://github.com/quinnzshen/DDSR2020).
+order: 2
 ---
 
 ## Description

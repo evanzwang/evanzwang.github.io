@@ -1,0 +1,43 @@
+---
+title: Connect Interactive
+layout: page
+reading_time: False
+width: fluid
+category: projects
+hide_in_nav: True
+order: 1
+---
+
+
+<div>
+    <p>Click on the board to move.</p>
+    <p>When the neural network is making a move, the UI may freeze.</p>
+</div>
+
+<div class="half-center center">
+    Player Colors:
+    <div id="players" class="center dark-border-thin"></div>
+</div>
+
+
+<div class="vert-sep"></div>
+
+
+<div id="board-msg">
+    <div id="msg"></div>
+    <div class="small-vert-sep"></div>
+    <button id="reset-button">Reset Game</button>
+</div>
+
+
+<div class="vert-sep"></div>
+
+
+<div id="board" class="half-center dark-border"></div>
+
+
+<footer>
+    <script src="https://cdn.jsdelivr.net/npm/onnxjs/dist/onnx.min.js"></script>
+    <script type="module" src="/assets/scripts/modelArch.js"></script>
+    <script type="module" src="/assets/scripts/connectGame.js"></script>
+</footer>

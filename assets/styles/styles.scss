@@ -1,0 +1,145 @@
+---
+---
+
+.video-container{
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+}
+
+.video{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.light-caption{
+    color: #999999;
+    font-size: 0.9em;
+}
+
+div.full-width{
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+a{
+    color: #0813e0;
+}
+
+.none{
+    display: none;
+}
+
+.row{
+    display: flex;
+    // margin-left: auto;
+    // margin-right: auto;
+    margin: 0 auto;
+    // width: 50%;
+}
+
+.column{
+    flex: 50%;
+}
+
+
+.square {
+    background-color: navajowhite;
+    border: 0.08vw solid rgb(116, 103, 90);
+    // border-bottom-width: 2px;
+    font-size: 2.1vw;
+    font-weight: 700;
+    // line-height: 2px;
+    // height: 100%;
+    // width: 100%;
+    // width: 10%;
+    flex: 10%;
+    // width: 10%;
+    // height: 100%;
+
+    height: 0;
+    padding-bottom: 10%;
+    // margin-right: -2px;
+    // margin-top: -2px;
+    // padding: 0;/
+    text-align: center;
+    position: relative;
+}
+
+.piece {
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    height: 90%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+}
+
+.temp-piece{
+    opacity: 0.5;
+}
+
+.t2c1 {
+    color: rgba($color: darkslategray, $alpha: 1);
+    background-color: rgba($color: darkslategray, $alpha: 1);
+}
+.t2c2 {
+    color: rgba($color: whitesmoke, $alpha: 1);
+    background-color: rgba($color: whitesmoke, $alpha: 1);
+}
+
+.half-center{
+    margin: auto;
+    width: 50%;
+}
+
+.dark-border{
+    // border: rgb(116, 103, 90) solid 6px;
+    border: rgb(116, 103, 90) solid 0.3vw;
+    background-color: rgb(116, 103, 90);
+}
+
+.dark-border-thin{
+    border: rgb(116, 103, 90) solid 0.18vw;
+    background-color: rgb(116, 103, 90);
+}
+
+#board-msg{
+    border: rgb(116, 103, 90) solid 0.18vw;
+    background-color: navajowhite;
+    margin: auto;
+    text-align: center;
+    width: 40%;
+    padding: 1vh;
+}
+
+.vert-sep{
+    margin-bottom: 0.9em;
+}
+.small-vert-sep{
+    margin-bottom: 0.4em;
+}
+
+.center{
+    margin: auto;
+    text-align: center;
+}
+
+#reset-button{
+    border: none;
+    color: white;
+    padding: 1vh 2vh;
+    text-align: center;
+    background-color: #f44336;
+    border-radius: 8%;
+}
+
+
