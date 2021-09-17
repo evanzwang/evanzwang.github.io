@@ -148,7 +148,6 @@ class NNPlayer{
         this.steps = mcstSteps;
         this.session = new InferenceSession({ backendHint: 'webgl' });
         this.nnPath = nnModelPath;
-        // this.setUpSession(nnModelPath);
         this.tree = new MCST(this.session, this.bm);
     }
 
@@ -161,15 +160,12 @@ class NNPlayer{
     }
 
     async doSearches(state, player){
-        console.log(`Search player: ${player}`)
         for(let i = 0; i < this.steps; i++){
-            console.log("lol");
             await this.tree.search(state, player);
         }
     }
 
     async chooseAction(state, player){
-        console.log(`Choose action player: ${player}`)
         return this.doSearches(state, player).then(() => {
             let maxAction = this.tree.getMaxAction(state, player);
             return maxAction;
@@ -199,7 +195,7 @@ class MCST{
         let visNum = this.NSA[encodedState];
         let possActions = [];
         let maxVis = -1;
-        console.log(`LELELELELELELEL: ${visNum}`);
+
         for(let i = 0; i < visNum.length; i++){
             if(maxVis < visNum[i]){
                 possActions = [];
@@ -224,7 +220,7 @@ class MCST{
             this.QSA[encodedState] = new Float32Array(probs.length);
             this.NSA[encodedState] = new Int32Array(probs.length);
             this.NS[encodedState] = 0;
-            console.log("early");
+
             return [val, player];
         }
         
@@ -251,24 +247,17 @@ class MCST{
         visNum[takenAction]++;
         
         if(winStatus){
-            console.log(`bee: ${winStatus}`);
             let relVal = (-1) ** (winStatus != player) * (winStatus > 0);
-            qVals[takenAction] = (qVals[takenAction] * visNum[takenAction]-1 + relVal) / (visNum[takenAction]);
+            qVals[takenAction] = (qVals[takenAction] * (visNum[takenAction]-1) + relVal) / (visNum[takenAction]);
             return [relVal, winStatus > 0 ? winStatus : 0];
-            // if(winStatus > 0){
-            //     console.log("won")
-            //     return [1, winStatus];
-            // }
-            // return [0, 0];
         }
 
         let newPlayer = this.bm.nextPlayer(player);
         let [nextStateVal, valPlayer] = await this.search(newState, newPlayer);
 
         let relVal = (-1) ** (valPlayer != player) * nextStateVal;
-        qVals[takenAction] = (qVals[takenAction] * visNum[takenAction]-1 + relVal) / (visNum[takenAction]);
+        qVals[takenAction] = (qVals[takenAction] * (visNum[takenAction]-1) + relVal) / (visNum[takenAction]);
         visNum[takenAction]++;
-        console.log("wub");
         return [nextStateVal, valPlayer];
     }
 }
