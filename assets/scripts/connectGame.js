@@ -115,6 +115,7 @@ class Game{
     makeMove(action){
         let [newBoard, winStatus] = this.bm.takeAction(this.board, action, this.currPlayer);
         if(winStatus == -1){
+            console.log(`Invalid Action: ${action}`)
             this.setMessage(`Invalid move for Player ${this.currPlayer}.`);
             return;
         }
@@ -208,10 +209,12 @@ class Game{
 async function runGame(){
     let g = new Game(10, 10, 5, true, 2);
     let bm = new BoardManager(10, 10, 5, true, 2);
-    let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 36);
+    let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 120);
 
     g.players = ["H", nn];
-    g.renderBoard();
+    nn.setUpSession().then(() => {
+        g.renderBoard();
+    });
 }
 
 window.onload = runGame()

@@ -88,7 +88,7 @@ class BoardManager{
         let ans = 0;
         for (const row of board) {
             for (const el of row) {
-                if(el == 0){
+                if(el === 0){
                     ans++;
                 }
             }
@@ -101,7 +101,7 @@ class BoardManager{
         if(this.isDirect){
             for (const row of board) {
                 for (const el of row) {
-                    validMoves.push(el == 0);
+                    validMoves.push(el === 0);
                 }
             }
         }else{
@@ -143,16 +143,17 @@ class BoardManager{
 }
 
 class NNPlayer{
-    constructor(bm, nnModelPath, mcstSteps,){
+    constructor(bm, nnModelPath, mcstSteps){
         this.bm = bm;
         this.steps = mcstSteps;
-        this.session = new InferenceSession();
-        this.setUpSession(nnModelPath);
+        this.session = new InferenceSession({ backendHint: 'webgl' });
+        this.nnPath = nnModelPath;
+        // this.setUpSession(nnModelPath);
         this.tree = new MCST(this.session, this.bm);
     }
 
-    async setUpSession(nnModelPath){
-        await this.session.loadModel(nnModelPath);
+    async setUpSession(){
+        await this.session.loadModel(this.nnPath);
     }
 
     reset(){
@@ -160,12 +161,15 @@ class NNPlayer{
     }
 
     async doSearches(state, player){
+        console.log(`Search player: ${player}`)
         for(let i = 0; i < this.steps; i++){
+            console.log("lol");
             await this.tree.search(state, player);
         }
     }
 
     async chooseAction(state, player){
+        console.log(`Choose action player: ${player}`)
         return this.doSearches(state, player).then(() => {
             let maxAction = this.tree.getMaxAction(state, player);
             return maxAction;
@@ -195,7 +199,7 @@ class MCST{
         let visNum = this.NSA[encodedState];
         let possActions = [];
         let maxVis = -1;
-
+        console.log(`LELELELELELELEL: ${visNum}`);
         for(let i = 0; i < visNum.length; i++){
             if(maxVis < visNum[i]){
                 possActions = [];
@@ -220,6 +224,7 @@ class MCST{
             this.QSA[encodedState] = new Float32Array(probs.length);
             this.NSA[encodedState] = new Int32Array(probs.length);
             this.NS[encodedState] = 0;
+            console.log("early");
             return [val, player];
         }
         
@@ -241,20 +246,29 @@ class MCST{
         }
 
         let [newState, winStatus] = this.bm.takeAction(state, takenAction, player);
+
+        this.NS[encodedState]++;
+        visNum[takenAction]++;
+        
         if(winStatus){
-            if(winStatus > 0){
-                return [1, winStatus];
-            }
-            return [0, 0];
+            console.log(`bee: ${winStatus}`);
+            let relVal = (-1) ** (winStatus != player) * (winStatus > 0);
+            qVals[takenAction] = (qVals[takenAction] * visNum[takenAction]-1 + relVal) / (visNum[takenAction]);
+            return [relVal, winStatus > 0 ? winStatus : 0];
+            // if(winStatus > 0){
+            //     console.log("won")
+            //     return [1, winStatus];
+            // }
+            // return [0, 0];
         }
 
         let newPlayer = this.bm.nextPlayer(player);
         let [nextStateVal, valPlayer] = await this.search(newState, newPlayer);
 
         let relVal = (-1) ** (valPlayer != player) * nextStateVal;
-        this.NS[encodedState]++;
-        qVals[takenAction] = (qVals[takenAction] * visNum[takenAction] + relVal) / (visNum[takenAction] + 1);
+        qVals[takenAction] = (qVals[takenAction] * visNum[takenAction]-1 + relVal) / (visNum[takenAction]);
         visNum[takenAction]++;
+        console.log("wub");
         return [nextStateVal, valPlayer];
     }
 }
