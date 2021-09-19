@@ -24,22 +24,35 @@ class BoardManager{
         return currPlayer % this.numPlayers + 1
     }
 
+    lowestOpeningInColumn(board, col){
+        for(let i = this.height - 1; i >= 0; i--){
+            if(board[i][col] === 0){
+                return i;
+            }
+        }
+        return -1;
+    }
+
     takeAction(board, action, player){
         let newBoard = [];
         for(let i = 0; i < this.height; i++){
             newBoard.push([...board[i]])
         }
+        let r, c;
         if(this.isDirect){
-            let r = Math.floor(action/this.width);
-            let c = action % this.width;
-            if(newBoard[r][c] == 0){
-                newBoard[r][c] = player;
-                return [newBoard, this.isConnected(newBoard, r, c)];
-            }else{
-                return [board, -1];
-            }
+            r = Math.floor(action/this.width);
+            c = action % this.width;
+            
         }else{
-            throw{name : "Not Implemented"};
+            r = this.lowestOpeningInColumn(board, action);
+            r = r < 0 ? 0 : r;
+            c = action;
+        }
+        if(newBoard[r][c] === 0){
+            newBoard[r][c] = player;
+            return [newBoard, this.isConnected(newBoard, r, c)];
+        }else{
+            return [board, -1];
         }
     }
 
@@ -105,7 +118,9 @@ class BoardManager{
                 }
             }
         }else{
-            throw{name: "Not Implemented"};
+            for (const el of board[0]){
+                validMoves.push(el === 0);
+            }
         }
         return validMoves;
     }

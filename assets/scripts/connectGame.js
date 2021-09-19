@@ -119,6 +119,9 @@ class Game{
             this.setMessage(`Invalid move for Player ${this.currPlayer}.`);
             return;
         }
+        if(!this.bm.isDirect){
+            action += this.bm.lowestOpeningInColumn(this.board, action) * this.bm.width;
+        }
         this.board = newBoard;
         this.renderPiece(action);
         if(winStatus != 0){
@@ -143,8 +146,22 @@ class Game{
             }
             return;
         }
+        if(this.players[this.currPlayer-1] !== "H"){
+            this.setMessage(`Player ${this.currPlayer} is still making a move.`)
+            return;
+        }
+        let action;
         if(this.bm.isDirect){
-            let action;
+            if(event.target.classList.contains("piece")){
+                if(event.target.parentNode.id){
+                    action = event.target.parentNode.id;
+                }else{
+                    return;
+                }
+            }else{
+                action = event.target.id;
+            }            
+        }else{
             if(event.target.classList.contains("piece")){
                 if(event.target.parentNode.id){
                     action = event.target.parentNode.id;
@@ -154,49 +171,79 @@ class Game{
             }else{
                 action = event.target.id;
             }
-            if(this.players[this.currPlayer-1] !== "H"){
-                this.setMessage(`Player ${this.currPlayer} is still making a move.`)
-                return;
-            }
-            this.makeMove(action);
-        }else{
-            throw{name : "Not Implemented"};
+            action %= this.bm.width;
         }
+        this.makeMove(action);
     }
 
     hoverSquare(event){
         if(this.winner){
             return;
         }
+        if(this.players[this.currPlayer-1] !== "H"){
+            return;
+        }
+        let spot;
         if(this.bm.isDirect){
             if(event.target.classList.contains("piece")){
                 return;
             }
-            if(this.players[this.currPlayer-1] !== "H"){
+            spot = event.target.id;   
+        }else{
+            if(event.target.classList.contains("piece")){
+                if(event.target.parentNode.id){
+                    spot = event.target.parentNode.id;
+                }else{
+                    return;
+                }
+            }else{
+                spot = event.target.id;
+            }
+            spot %= this.bm.width;
+            let row = this.bm.lowestOpeningInColumn(this.board, spot);
+            if(row != -1){
+                spot += this.bm.lowestOpeningInColumn(this.board, spot) * this.bm.width;
+            }else{
                 return;
             }
-            this.renderPiece(event.target.id, true);
-        }else{
-            throw{name : "Not Implemented"};
         }
+        this.renderPiece(spot, true);
     }
 
     outHoverSquare(event){
         if(this.winner){
             return;
         }
+        let squ;
         if(this.bm.isDirect){
             if(event.target.classList.contains("piece")){
                 return;
             }
-            let squ = event.target;
-            for(let i = 0; i < squ.children.length; i++){
-                if(squ.children[i].classList.contains("temp-piece")){
-                    squ.removeChild(squ.children[i])
-                }
-            }
+            squ = event.target;
         }else{
-            throw{name : "Not Implemented"};
+            let spot;
+            if(event.target.classList.contains("piece")){
+                if(event.target.parentNode.id){
+                    spot = event.target.parentNode.id;
+                }else{
+                    return;
+                }
+            }else{
+                spot = event.target.id;
+            }
+            spot %= this.bm.width;
+            let row = this.bm.lowestOpeningInColumn(this.board, spot);
+            if(row != -1){
+                spot += this.bm.lowestOpeningInColumn(this.board, spot) * this.bm.width;
+            }else{
+                return;
+            }
+            squ = document.getElementById(spot);
+        }
+        for(let i = 0; i < squ.children.length; i++){
+            if(squ.children[i].classList.contains("temp-piece")){
+                squ.removeChild(squ.children[i])
+            }
         }
     }
 
@@ -207,8 +254,8 @@ class Game{
 }
 
 async function runGame(){
-    let g = new Game(10, 10, 5, true, 2);
-    let bm = new BoardManager(10, 10, 5, true, 2);
+    let g = new Game(10, 10, 5, false, 2);
+    let bm = new BoardManager(10, 10, 5, false, 2);
     let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 120);
 
     g.players = ["H", nn];
