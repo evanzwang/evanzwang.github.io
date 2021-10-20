@@ -256,7 +256,7 @@ class Game{
 async function runGame(){
     let g = new Game(10, 10, 5, true, 2);
     let bm = new BoardManager(10, 10, 5, true, 2);
-    let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 120);
+    let nn = new NNPlayer(bm, "../assets/misc/fixed_r2_6000.onnx", 60);
 
     g.players = ["H", nn];
     nn.setUpSession().then(() => {
